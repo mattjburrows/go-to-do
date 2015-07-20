@@ -2,9 +2,10 @@ package main
 
 import(
     "fmt"
+    "os"
     "io/ioutil"
     "net/http"
-    // "html/template"
+    "html/template"
 )
 
 type Page struct {
@@ -13,13 +14,13 @@ type Page struct {
 }
 
 func (p *Page) save() error {
-    filename := p.Title + ".txt"
+    filename := "files/" + p.Title + ".txt"
 
     return ioutil.WriteFile(filename, p.Body, 0600)
 }
 
 func loadPage(title string) (*Page, error) {
-    filename := title + ".txt"
+    filename := "files/" + title + ".txt"
     body, err := ioutil.ReadFile(filename)
 
     if err != nil {
@@ -29,15 +30,52 @@ func loadPage(title string) (*Page, error) {
     return &Page{Title: title, Body: body}, nil
 }
 
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+    t, _ := template.ParseFiles("views/" + tmpl + ".html")
+    t.Execute(w, p)
+}
+
 func viewHandler(w http.ResponseWriter, r *http.Request) {
     title := r.URL.Path[len("/view/"):]
     p, _ := loadPage(title)
 
-    fmt.Fprintf(w, "<h1>%s</h1><p>%s</p>", p.Title, p.Body)
+    renderTemplate(w, "view", p)
 }
 
+func editHandler(w http.ResponseWriter, r *http.Request) {
+    title := r.URL.Path[len("/edit/"):]
+    p, err := loadPage(title)
+
+    if err != nil {
+        p = &Page{Title: title}
+    }
+
+    renderTemplate(w, "edit", p)
+}
+
+// func saveHandler(w http.ResponseWriter, *r http.Request) {
+//
+// }
+
 func main() {
+    dirname := "files"
+    d, _ := os.Open(dirname)
+
+    files, err := d.Readdir(-1)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    for _, file := range files {
+        if file.Mode().IsRegular() {
+            fmt.Println(file.Name(), file.Size(), "bytes")
+        }
+    }
+
     http.HandleFunc("/view/", viewHandler)
+    http.HandleFunc("/edit/", editHandler)
+    // http.HandleFunc("/save/", saveHandler)
     http.ListenAndServe(":8080", nil)
 }
 

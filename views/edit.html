@@ -1,14 +1,23 @@
-<form action="/edit/" method="post">
-    <legend>Edit To-Do item</legend>
-    <fieldset>
-        <ul>
-            <li>
-                <label for="edit-to-do-item">edit To-Do item</label>
-                <input type="text" name="edit-to-do-item" id="edit-to-do-item">
-            </li>
-            <li>
-                <button type="submit" name="button">Save edit</button>
-            </li>
-        </ul>
-    </fieldset>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <form action="/save/{{.Title}}" method="post">
+        <legend>Editing {{.Title}}</legend>
+        <fieldset>
+            <ul>
+                <li>
+                    <label for="edit-to-do-item">Edit To-Do item</label><br>
+                    <textarea name="edit-to-do-item" id="edit-to-do-item" rows="20" cols="80">{{printf "%s" .Body}}</textarea>
+                </li>
+                <li>
+                    <button type="submit" name="button">Save edit</button>
+                </li>
+            </ul>
+        </fieldset>
+    </form>
+</body>
+</html>
